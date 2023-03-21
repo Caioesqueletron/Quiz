@@ -3,7 +3,11 @@ package com.example.quiz;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -14,7 +18,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Quiz extends AppCompatActivity implements View.OnClickListener, RadioGroup.OnCheckedChangeListener{
+public class Quiz extends AppCompatActivity implements View.OnClickListener, RadioGroup.OnCheckedChangeListener, Runnable {
     private TextView acertos;
     private TextView errados;
     private TextView pergunta;
@@ -25,11 +29,17 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
     private RadioButton radio3;
     private RadioButton radio4;
     private RadioGroup radioGroup;
+    private RadioButton radioTocado;
     private Button enviar;
     private ArrayList<Questions> perguntas = new ArrayList<>();
     private int indice;
     private String mod1;
     private String mod2;
+    private String textoRadioSelecionado;
+    private Integer acertosCount;
+    private Integer errosCount;
+    private int limitePerguntas;
+    private Handler handler;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -46,7 +56,13 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
         radio3 = (RadioButton) findViewById(R.id.radioButton3);
         radio4 = (RadioButton) findViewById(R.id.radioButton4);
         radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
+        radioGroup.setOnCheckedChangeListener(this);
         enviar = (Button) findViewById(R.id.button2);
+        enviar.setEnabled(false);
+        acertosCount = 0;
+        errosCount = 0;
+        limitePerguntas = 0;
+        handler = new Handler();
 
         enviar.setOnClickListener(this);
         carregaPerguntas();
@@ -55,7 +71,7 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
         carregaPerguntaNoDesign();
     }
 
-    public void carregaPerguntas(){
+    public void carregaPerguntas() {
         Questions pergunta = new Questions();
         pergunta.setPergunta("Quantas vezes o Brasil foi campeão em uma Copa do Mundo ?");
         pergunta.setResp1("2");
@@ -120,16 +136,15 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
         perguntas.add(pergunta5);
 
 
-
     }
 
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
-    public void carregaPerguntaNoDesign(){
+    public void carregaPerguntaNoDesign() {
         barra.setProgress(0);
         indice = 1;
         Collections.shuffle(perguntas);
-        acertos.setText(Integer.toString(0));
-        errados.setText(Integer.toString(0));
+        acertos.setText("Acertos: " + acertosCount.toString());
+        errados.setText("Erros: " + errosCount.toString());
         pergunta.setText(String.format("%s%d%s", mod1, indice, mod2));
         questao.setText(perguntas.get(indice).getPergunta());
         radio1.setText(perguntas.get(indice).getResp1());
@@ -138,26 +153,92 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
         radio4.setText(perguntas.get(indice).getResp4());
 
 
-
     }
 
     @SuppressLint("DefaultLocale")
     @Override
     public void onClick(View view) {
-        if(enviar == view){
-            indice++;
-            pergunta.setText(String.format("%s%d%s", mod1, indice, mod2));
-            questao.setText(perguntas.get(indice).getPergunta());
-            radio1.setText(perguntas.get(indice).getResp1());
-            radio2.setText(perguntas.get(indice).getResp2());
-            radio3.setText(perguntas.get(indice).getResp3());
-            radio4.setText(perguntas.get(indice).getResp4());
+        if (enviar == view) {
+            try {
+                checkResults();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
 
         }
     }
 
     @Override
     public void onCheckedChanged(RadioGroup radioGroup, int i) {
-        
+        if (radioGroup == this.radioGroup) {
+            enviar.setEnabled(true);
+            radioTocado = new RadioButton(this);
+
+            if (i == radio1.getId()) {
+                textoRadioSelecionado = radio1.getText().toString();
+                radioTocado = radio1;
+            }
+            if (i == radio2.getId()) {
+                textoRadioSelecionado = radio2.getText().toString();
+                radioTocado = radio2;
+            }
+            if (i == radio3.getId()) {
+                textoRadioSelecionado = radio3.getText().toString();
+                radioTocado = radio3;
+            }
+            if (i == radio4.getId()) {
+                textoRadioSelecionado = radio4.getText().toString();
+                radioTocado = radio4;
+            }
+        }
+    }
+
+    @SuppressLint("DefaultLocale")
+    public void checkResults() throws InterruptedException {
+        radio1.setEnabled(false);
+        radio2.setEnabled(false);
+        radio3.setEnabled(false);
+        radio4.setEnabled(false);
+        enviar.setEnabled(false);
+
+        if (textoRadioSelecionado.compareToIgnoreCase(perguntas.get(indice).getRespCerto()) == 0) {
+            radioTocado.setBackgroundColor(Color.GREEN);
+            acertosCount += 1;
+        } else {
+            radioTocado.setBackgroundColor(Color.RED);
+            errosCount += 1;
+
+        }
+        barra.setProgress(barra.getProgress() + 20);
+        limitePerguntas++;
+        if (limitePerguntas >= 5) {
+            Intent i = new Intent(this, Begin.class);
+            startActivity(i);
+            //acababou o quiz
+        } else {
+            handler.postDelayed(this, 1000);
+        }
+    }
+
+    @SuppressLint("DefaultLocale")
+    @Override
+    public void run() {
+        indice++;
+        pergunta.setText(String.format("%s%d%s", mod1, indice, mod2));
+        questao.setText(perguntas.get(indice).getPergunta());
+        radio1.setText(perguntas.get(indice).getResp1());
+        radio2.setText(perguntas.get(indice).getResp2());
+        radio3.setText(perguntas.get(indice).getResp3());
+        radio4.setText(perguntas.get(indice).getResp4());
+        acertos.setText(String.format("Acertos: %d", acertosCount));
+        errados.setText(String.format("Erros: %d", errosCount));
+        radioTocado.setBackgroundColor(Color.WHITE);
+        radio1.setEnabled(true);
+        radio2.setEnabled(true);
+        radio3.setEnabled(true);
+        radio4.setEnabled(true);
+        enviar.setEnabled(true);
+
     }
 }
