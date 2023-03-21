@@ -67,8 +67,26 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
         enviar.setOnClickListener(this);
         carregaPerguntas();
         mod1 = "Pergunta: ";
-        mod2 = "/10";
+        mod2 = "/" + perguntas.size();
+        if(savedInstanceState != null){
+            indice = savedInstanceState.getInt("chave");
+            acertosCount = savedInstanceState.getInt("acertos");
+            errosCount = savedInstanceState.getInt("erros");
+            barra.setProgress(savedInstanceState.getInt("barra"));
+
+        }else{
+            indice = 0;
+
+        }
         carregaPerguntaNoDesign();
+    }
+
+    protected void onSaveInstanceState(Bundle b) {
+       b.putInt("chave",indice);
+       b.putInt("erros",errosCount);
+       b.putInt("acertos",acertosCount);
+       b.putInt("barra",barra.getProgress());
+       super.onSaveInstanceState(b);
     }
 
     public void carregaPerguntas() {
@@ -138,14 +156,15 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
 
     }
 
+
+
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
     public void carregaPerguntaNoDesign() {
         barra.setProgress(0);
-        indice = 1;
         Collections.shuffle(perguntas);
         acertos.setText("Acertos: " + acertosCount.toString());
         errados.setText("Erros: " + errosCount.toString());
-        pergunta.setText(String.format("%s%d%s", mod1, indice, mod2));
+        pergunta.setText(String.format("%s%d%s", mod1, (indice+1), mod2));
         questao.setText(perguntas.get(indice).getPergunta());
         radio1.setText(perguntas.get(indice).getResp1());
         radio2.setText(perguntas.get(indice).getResp2());
@@ -215,9 +234,8 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
         if (limitePerguntas >= 5) {
             Intent i = new Intent(this, Begin.class);
             startActivity(i);
-            //acababou o quiz
         } else {
-            handler.postDelayed(this, 1000);
+            handler.postDelayed(this, 3000);
         }
     }
 
@@ -225,7 +243,7 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
     @Override
     public void run() {
         indice++;
-        pergunta.setText(String.format("%s%d%s", mod1, indice, mod2));
+        pergunta.setText(String.format("%s%d%s", mod1, (indice+1), mod2));
         questao.setText(perguntas.get(indice).getPergunta());
         radio1.setText(perguntas.get(indice).getResp1());
         radio2.setText(perguntas.get(indice).getResp2());
@@ -239,7 +257,7 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
         radio2.setEnabled(true);
         radio3.setEnabled(true);
         radio4.setEnabled(true);
-        enviar.setEnabled(true);
+       // enviar.setEnabled(true);
 
     }
 }
