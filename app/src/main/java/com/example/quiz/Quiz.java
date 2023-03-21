@@ -234,6 +234,7 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
         acertos.setText(String.format("Acertos: %d", acertosCount));
         errados.setText(String.format("Erros: %d", errosCount));
         radioTocado.setBackgroundColor(Color.WHITE);
+        radioTocado.setChecked(false);
         radio1.setEnabled(true);
         radio2.setEnabled(true);
         radio3.setEnabled(true);
