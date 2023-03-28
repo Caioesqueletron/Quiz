@@ -3,6 +3,7 @@ package com.example.quiz;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -10,6 +11,7 @@ import android.widget.Button;
 public class Begin extends AppCompatActivity implements View.OnClickListener{
 
     private Button btn;
+    private SharedPreferences shared;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +21,11 @@ public class Begin extends AppCompatActivity implements View.OnClickListener{
         btn = (Button) findViewById(R.id.button);
 
         btn.setOnClickListener(this);
+        shared = getSharedPreferences("acesso1", 0);
+        SharedPreferences.Editor edit = shared.edit();
+        edit.putString("Valor", "Quiz Elaborado na Aula");
+        edit.putString("valor1", "Qualquer outro dado para salvar");
+        edit.commit();
 
     }
 

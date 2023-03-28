@@ -1,5 +1,6 @@
 package com.example.quiz;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -7,13 +8,18 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+
+import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.appcompat.widget.Toolbar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,12 +46,23 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
     private Integer errosCount;
     private int limitePerguntas;
     private Handler handler;
+    private Toolbar tool;
 
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quiz);
+        tool = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(tool);
+        tool.setTitle("Quiz");
+        tool.setSubtitle("Acerte as Questões");
+        ActionBar action = getSupportActionBar();
+        //action.setLogo(R.drawable.ic_action_name);
+        //action.setDisplayUseLogoEnabled(true);
+        action.setDisplayHomeAsUpEnabled(true);
+
+
         acertos = (TextView) findViewById(R.id.textView2);
         errados = (TextView) findViewById(R.id.textView3);
         pergunta = (TextView) findViewById(R.id.textView4);
@@ -229,14 +246,30 @@ public class Quiz extends AppCompatActivity implements View.OnClickListener, Rad
             errosCount += 1;
 
         }
-        barra.setProgress(barra.getProgress() + 20);
+        barra.setProgress(barra.getProgress() +barra.getMax()/7);
         limitePerguntas++;
-        if (limitePerguntas >= 5) {
-            Intent i = new Intent(this, Begin.class);
+        if (limitePerguntas >= 7) {
+            Intent i = new Intent(this, TelaFim.class);
             startActivity(i);
         } else {
             handler.postDelayed(this, 3000);
         }
+    }
+
+    @SuppressLint("RestrictedApi")
+    public boolean onCreateOptionsMenu(Menu menu){
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        if(menu instanceof MenuBuilder){
+            MenuBuilder m = (MenuBuilder) menu;
+            m.setOptionalIconsVisible(true);
+        }
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item){
+        int id_tocado = item.getItemId();
+        return super.onOptionsItemSelected(item);
     }
 
     @SuppressLint("DefaultLocale")
